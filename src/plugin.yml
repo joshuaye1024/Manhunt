@@ -1,0 +1,5 @@
+name: manhunt
+version: 1.0
+author: penguindude1024
+main: com.gmail.penguindude1024.manhunt.Manhunt
+api-version: 1.16.3
