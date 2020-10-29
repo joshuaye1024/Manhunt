@@ -21,13 +21,14 @@ public class PlayerTracker implements Listener {
     private ItemStack compassStack;
     private ItemMeta im;
     private ArrayList<String> lore;
-    //TODO: make method to determine who are the hunters
+
     private HashSet<Player> hunters;
     private HashSet<Player> seekers;
 
     @EventHandler
     public void givePlayerCompass(PlayerJoinEvent event){
         Player p = event.getPlayer();
+        p.sendMessage(ChatColor.BLUE + "Type " + ChatColor.RED + "hunter " + ChatColor.BLUE + "or " + ChatColor.GREEN + "seeker " + ChatColor.BLUE + "in the chat to be assigned to the proper team!");
 
         if(!p.getInventory().contains(Material.COMPASS)){
 
@@ -70,6 +71,8 @@ public class PlayerTracker implements Listener {
         }
     }
 
+
+
     @EventHandler
     public void playerClickTracker(PlayerInteractEvent event){
         Player p = event.getPlayer();
@@ -79,81 +82,29 @@ public class PlayerTracker implements Listener {
         }
     }
 
-    //UHCCore Code to point compass
+    public void pointCompassToNextPlayer(Player hunterPlayer, HashSet<Player> seekerSet){
+        ArrayList<Player> seekerArr = new ArrayList<>(seekerSet);
 
-    /*
-    public void pointCompassToNextPlayer(int mode, int cooldown) {
-		PlayersManager pm = GameManager.getGameManager().getPlayersManager();
-		List<UhcPlayer> pointPlayers = new ArrayList<>();
+        int seekerIndex = -1;
 
-		// Check cooldown
-		if (cooldown != -1 && (cooldown*TimeUtils.SECOND) + compassPlayingLastUpdate > System.currentTimeMillis()){
-			sendMessage(Lang.ITEMS_COMPASS_PLAYING_COOLDOWN);
-			return;
-		}
+        // Switching to next player
+        if(seekerIndex == seekerArr.size()-1)
+            seekerIndex = 0;
+        else
+            seekerIndex++;
 
-		switch (mode){
-			case 1:
-				pointPlayers.addAll(team.getOnlinePlayingMembers());
-				break;
-			case 2:
-				pointPlayers.addAll(pm.getOnlinePlayingPlayers());
-				for (UhcPlayer teamMember : team.getOnlinePlayingMembers()){
-					pointPlayers.remove(teamMember);
-				}
-				break;
-			case 3:
-				pointPlayers.addAll(pm.getOnlinePlayingPlayers());
-				break;
-		}
+        // Correct indice if out of bounds
+        if(seekerIndex == seekerArr.size())
+            seekerIndex = 0;
 
-		if((pointPlayers.size() == 1 && pointPlayers.get(0).equals(this)) || pointPlayers.size() == 0){
-			sendMessage(ChatColor.RED+ Lang.ITEMS_COMPASS_PLAYING_ERROR);
-		}else{
-			int currentIndice = -1;
-			for(int i = 0 ; i < pointPlayers.size() ; i++){
-				if(pointPlayers.get(i).equals(compassPlayingCurrentPlayer))
-					currentIndice = i;
-			}
+        //Point compass
+        Player target = seekerArr.get(seekerIndex);
+        double targetDistance = hunterPlayer.getLocation().distance(target.getLocation());
 
-			// Switching to next player
-			if(currentIndice == pointPlayers.size()-1)
-				currentIndice = 0;
-			else
-				currentIndice++;
+        hunterPlayer.setCompassTarget(target.getLocation());
 
+        String message = ChatColor.GREEN+ target.getName() + " is " + String.valueOf(targetDistance) + " blocks away!";
 
-			// Skipping player if == this
-			if(pointPlayers.get(currentIndice).equals(this))
-				currentIndice++;
-
-			// Correct indice if out of bounds
-			if(currentIndice == pointPlayers.size())
-				currentIndice = 0;
-
-
-			// Pointing compass
-			compassPlayingCurrentPlayer = pointPlayers.get(currentIndice);
-			compassPlayingLastUpdate = System.currentTimeMillis();
-			try {
-				Player bukkitPlayer = getPlayer();
-				Player bukkitPlayerPointing = compassPlayingCurrentPlayer.getPlayer();
-
-				bukkitPlayer.setCompassTarget(bukkitPlayerPointing.getLocation());
-
-				String message = ChatColor.GREEN+ Lang.ITEMS_COMPASS_PLAYING_POINTING.replace("%player%", compassPlayingCurrentPlayer.getName());
-
-				if (message.contains("%distance%")){
-					int distance = (int) bukkitPlayer.getLocation().distance(bukkitPlayerPointing.getLocation());
-					message = message.replace("%distance%", String.valueOf(distance));
-				}
-
-				sendMessage(message);
-			} catch (UhcPlayerNotOnlineException e) {
-				sendMessage(ChatColor.RED+ Lang.TEAM_PLAYER_NOT_ONLINE.replace("%player%", compassPlayingCurrentPlayer.getName()));
-			}
-		}
-
-	}
-     */
+        hunterPlayer.sendMessage(message);
+    }
 }
